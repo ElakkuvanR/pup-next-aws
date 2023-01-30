@@ -40,6 +40,7 @@ export default async (req, res) => {
     let chrome;
 	const logLevel = "info";
     log.setLevel(logLevel);
+    res.status(200).json("I will continue to work.");
     chrome = await chromeLauncher.launch({
       chromePath: browserPath,
       chromeFlags: [
