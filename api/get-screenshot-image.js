@@ -38,6 +38,7 @@ export default async (req, res) => {
     const browserPath = await getBrowserPath();
     console.log("Browser path", browserPath);
     let chrome;
+	const logLevel = "info";
     log.setLevel(logLevel);
     chrome = await chromeLauncher.launch({
       chromePath: browserPath,
