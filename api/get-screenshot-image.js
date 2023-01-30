@@ -1,6 +1,7 @@
 let puppeteer;
 let chrome = {};
 const chromeLauncher = require("chrome-launcher");
+const log = require("lighthouse-logger");
 
 const getBrowserPath = async () => {
   let options = {};
