@@ -1,32 +1,26 @@
-import chromium from "chrome-aws-lambda";
-
+let puppeteer;
+let chrome = {};
+const chromeLauncher = require("chrome-launcher");
 async function getBrowserInstance() {
-  const executablePath = await chromium.executablePath;
-
-  if (!executablePath) {
-    // running locally
-    const puppeteer = require("puppeteer");
-    return puppeteer.launch({
-      args: chromium.args,
-      headless: true,
-      defaultViewport: {
-        width: 1280,
-        height: 720,
-      },
-      ignoreHTTPSErrors: true,
-    });
-  }
-
-  return chromium.puppeteer.launch({
-    args: chromium.args,
-    defaultViewport: {
-      width: 1280,
-      height: 720,
-    },
-    executablePath,
-    headless: chromium.headless,
-    ignoreHTTPSErrors: true,
-  });
+  const getBrowserPath = async () => {
+    let options = {};
+    if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+      chrome = require("chrome-aws-lambda");
+      puppeteer = require("puppeteer-core");
+    } else {
+      puppeteer = require("puppeteer");
+    }
+    if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+      options = {
+        args: [...chrome.args, "--hide-scrollbars", "--disable-web-security"],
+        defaultViewport: chrome.defaultViewport,
+        executablePath: await chrome.executablePath,
+        headless: true,
+        ignoreHTTPSErrors: true,
+      };
+    }
+    return options.executablePath;
+  };
 }
 
 export default async (req, res) => {
@@ -40,9 +34,21 @@ export default async (req, res) => {
     return;
   }
   let browser = null;
-
   try {
-    browser = await getBrowserInstance();
+    const browserPath = await getBrowserPath();
+    console.log("Browser path", browserPath);
+    let chrome;
+    log.setLevel(logLevel);
+    chrome = await chromeLauncher.launch({
+      chromePath: browserPath,
+      chromeFlags: [
+        "--headless",
+        "--no-sandbox",
+        "--disable-gpu",
+        "--disable-dev-shm-usage",
+      ],
+      logLevel,
+    });
     let page = await browser.newPage();
     await page.goto(url);
     const result = await page.screenshot({
