@@ -1,27 +1,26 @@
 let puppeteer;
 let chrome = {};
 const chromeLauncher = require("chrome-launcher");
-async function getBrowserInstance() {
-  const getBrowserPath = async () => {
-    let options = {};
-    if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
-      chrome = require("chrome-aws-lambda");
-      puppeteer = require("puppeteer-core");
-    } else {
-      puppeteer = require("puppeteer");
-    }
-    if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
-      options = {
-        args: [...chrome.args, "--hide-scrollbars", "--disable-web-security"],
-        defaultViewport: chrome.defaultViewport,
-        executablePath: await chrome.executablePath,
-        headless: true,
-        ignoreHTTPSErrors: true,
-      };
-    }
-    return options.executablePath;
-  };
-}
+
+const getBrowserPath = async () => {
+  let options = {};
+  if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+    chrome = require("chrome-aws-lambda");
+    puppeteer = require("puppeteer-core");
+  } else {
+    puppeteer = require("puppeteer");
+  }
+  if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+    options = {
+      args: [...chrome.args, "--hide-scrollbars", "--disable-web-security"],
+      defaultViewport: chrome.defaultViewport,
+      executablePath: await chrome.executablePath,
+      headless: true,
+      ignoreHTTPSErrors: true,
+    };
+  }
+  return options.executablePath;
+};
 
 export default async (req, res) => {
   const url = req.body.url;
